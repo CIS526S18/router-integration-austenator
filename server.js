@@ -3,6 +3,7 @@ const fs = require('fs');
 const qs = require('querystring');
 const sqlite3 = require('sqlite3');
 const view = require('./view/view');
+const Router = require('./helpers/router');
 const studentController = require('./controller/students');
 
 const PORT = 3000;
@@ -12,6 +13,12 @@ var db = new sqlite3.Database('./data/roster.sqlite3');
 
 // create the template cache
 view.cacheTemplates();
+
+// Create our Router;
+var router = new Router();
+router.addRoute('GET', '/students', studentController.list);
+router.addRoute('GET', '/', studentController.list);
+router.addRoute('POST', '/students', studentController.create);
 
 /** @function handleRequest
   * Handles requests to the webserver by rendering a page listing
@@ -30,7 +37,7 @@ function handleRequest(req, res) {
 }
 
 // Create the webserver
-var server = http.createServer(handleRequest);
+var server = http.createServer(function(req,res){router.route(req,res)});
 
 // Start listening for HTTP requests
 server.listen(PORT, function() {
